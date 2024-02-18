@@ -102,36 +102,33 @@ fn move_snake(
         (((SNAKE_SPEED * time.delta_seconds() / OBJECT_SIZE) as i32) as f32)
     );
     let mut transform_and_snake_head = snake_head_query.single_mut();
-    let mut transform = transform_and_snake_head.0;
+    let mut snake_head_transform = transform_and_snake_head.0;
     let snake_head = transform_and_snake_head.1;
     match snake_head.direction {
         Direction::Up => {
-            transform.translation.y +=
+            snake_head_transform.translation.y +=
                 (((SNAKE_SPEED * time.delta_seconds() / OBJECT_SIZE) as i32) as f32) * OBJECT_SIZE;
         }
         Direction::Down => {
-            transform.translation.y -=
+            snake_head_transform.translation.y -=
                 (((SNAKE_SPEED * time.delta_seconds() / OBJECT_SIZE) as i32) as f32) * OBJECT_SIZE;
         }
         Direction::Left => {
-            transform.translation.x -=
+            snake_head_transform.translation.x -=
                 (((SNAKE_SPEED * time.delta_seconds() / OBJECT_SIZE) as i32) as f32) * OBJECT_SIZE;
         }
         Direction::Right => {
-            transform.translation.x +=
+            .translation.x +=
                 (((SNAKE_SPEED * time.delta_seconds() / OBJECT_SIZE) as i32) as f32) * OBJECT_SIZE;
         }
     }
 
-    let mut last_translation = None;
+    let mut last_translation = snake_head_transform.translation;
 
     snake_body_query.iter_mut().for_each(|mut body_transform| {
-        if last_translation.is_none() {
-            last_translation = Some(transform.translation);
-        }
-        let temp_translation = transform.translation.clone();
-        body_transform.translation = last_translation.unwrap();
-        last_translation = Some(temp_translation);
+        let temp_translation = body_transform.translation.clone();
+        body_transform.translation = last_translation;
+        last_translation = temp_translation;
     });
 }
 
