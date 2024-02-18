@@ -25,9 +25,6 @@ struct SnakeHead {
 #[derive(Component)]
 struct SnakeBody;
 
-#[derive(Component, Clone, Copy, PartialEq)]
-struct Position(Vec2);
-
 #[derive(Component)]
 struct Apple;
 
@@ -85,7 +82,6 @@ fn check_collisions(
                 ..default()
             },
             SnakeBody,
-            Position(apple_translation.xy()),
         ));
     }
 }
@@ -210,7 +206,6 @@ fn setup_snake(
         SnakeHead {
             direction: Direction::Up,
         },
-        Position(Vec2::new(0.0, 0.0)),
     ));
 
     let body_mesh = Mesh2dHandle(meshes.add(Rectangle::new(OBJECT_SIZE, OBJECT_SIZE)));
@@ -223,7 +218,6 @@ fn setup_snake(
             ..default()
         },
         SnakeBody,
-        Position(Vec2::new(0.0, -OBJECT_SIZE)),
     ));
 
     let mut apple_position = get_random_position();
@@ -243,6 +237,5 @@ fn setup_snake(
             ..default()
         },
         Apple,
-        Position(apple_position),
     ));
 }
