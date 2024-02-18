@@ -51,7 +51,7 @@ fn main() {
 }
 
 fn check_collisions(
-    mut apple_query: Query<(&mut Transform), (With<Apple>)>,
+    mut apple_query: Query<(&mut Transform), (With<Apple>, Without<SnakeHead>, Without<SnakeBody>)>,
     mut snake_head_query: Query<(&mut Transform, &mut SnakeHead)>,
     mut snake_body_query: Query<(&mut Transform), (With<SnakeBody>, Without<SnakeHead>)>,
 ) {
