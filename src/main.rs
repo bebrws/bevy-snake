@@ -103,6 +103,7 @@ fn move_snake(
     );
     let mut transform_and_snake_head = snake_head_query.single_mut();
     let mut snake_head_transform = transform_and_snake_head.0;
+    let shake_head_translation = snake_head_transform.translation.clone();
     let snake_head = transform_and_snake_head.1;
     match snake_head.direction {
         Direction::Up => {
@@ -123,7 +124,7 @@ fn move_snake(
         }
     }
 
-    let mut last_translation = snake_head_transform.translation;
+    let mut last_translation = shake_head_translation;
 
     snake_body_query.iter_mut().for_each(|mut body_transform| {
         let temp_translation = body_transform.translation.clone();
