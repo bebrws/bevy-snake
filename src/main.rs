@@ -36,14 +36,20 @@ const SNAKE_SPEED: f32 = 200.0;
 fn main() {
     println!("Starting Bevy Snake!");
     App::new()
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
-            primary_window: Some(Window {
-                resolution: [WINDOW_WIDTH, WINDOW_HEIGHT].into(),
-                title: "Bevy Snake!".to_string(),
+        .add_plugins(
+            DefaultPlugins.set(WindowPlugin {
+                primary_window: Some(Window {
+                    resolution: [
+                        WINDOW_WIDTH + OBJECT_SIZE / 2.0,
+                        WINDOW_HEIGHT + OBJECT_SIZE / 2.0,
+                    ]
+                    .into(),
+                    title: "Bevy Snake!".to_string(),
+                    ..Default::default()
+                }),
                 ..Default::default()
             }),
-            ..Default::default()
-        }))
+        )
         .add_systems(Startup, setup_snake)
         .insert_resource(Time::<Fixed>::from_duration(Duration::from_millis(100)))
         .add_systems(FixedUpdate, (handle_input, move_snake, check_collisions))
@@ -63,8 +69,8 @@ fn check_collisions(
     if apple_translation == snake_head_translation {
         let mut apple_position = get_random_position();
         loop {
-            if apple_position != Vec2::new(OBJECT_SIZE / 2.0, OBJECT_SIZE / 2.0)
-                && apple_position != Vec2::new(OBJECT_SIZE / 2.0, -OBJECT_SIZE / 2.0)
+            if apple_position != Vec2::new(0.0, 0.0)
+                && apple_position != Vec2::new(0.0, -OBJECT_SIZE)
             {
                 break;
             }
@@ -193,12 +199,10 @@ fn get_random_position() -> Vec2 {
     let mut rng = rand::thread_rng();
     let x = (rng.gen_range(0..(WINDOW_WIDTH / OBJECT_SIZE) as i32)
         - (((WINDOW_WIDTH / OBJECT_SIZE) as i32) / 2)) as f32
-        * OBJECT_SIZE
-        + (OBJECT_SIZE / 2.0);
+        * OBJECT_SIZE;
     let y = (rng.gen_range(0..(WINDOW_HEIGHT / OBJECT_SIZE) as i32)
         - (((WINDOW_HEIGHT / OBJECT_SIZE) as i32) / 2)) as f32
-        * OBJECT_SIZE
-        + (OBJECT_SIZE / 2.0);
+        * OBJECT_SIZE;
     Vec2::new(x, y)
 }
 
@@ -215,11 +219,7 @@ fn setup_snake(
         MaterialMesh2dBundle {
             mesh: head_mesh,
             material: materials.add(box_color),
-            transform: Transform::from_translation(Vec3::new(
-                OBJECT_SIZE / 2.0,
-                OBJECT_SIZE / 2.0,
-                0.0,
-            )),
+            transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
             ..default()
         },
         SnakeHead {
@@ -233,11 +233,7 @@ fn setup_snake(
         MaterialMesh2dBundle {
             mesh: body_mesh,
             material: materials.add(box_color),
-            transform: Transform::from_translation(Vec3::new(
-                OBJECT_SIZE / 2.0,
-                -OBJECT_SIZE / 2.0,
-                0.0,
-            )),
+            transform: Transform::from_translation(Vec3::new(0.0, -OBJECT_SIZE, 0.0)),
             ..default()
         },
         SnakeBody,
@@ -245,9 +241,7 @@ fn setup_snake(
 
     let mut apple_position = get_random_position();
     loop {
-        if apple_position != Vec2::new(OBJECT_SIZE / 2.0, OBJECT_SIZE / 2.0)
-            && apple_position != Vec2::new(OBJECT_SIZE / 2.0, -OBJECT_SIZE / 2.0)
-        {
+        if apple_position != Vec2::new(0.0, 0.0) && apple_position != Vec2::new(0.0, -OBJECT_SIZE) {
             break;
         }
         apple_position = get_random_position();
