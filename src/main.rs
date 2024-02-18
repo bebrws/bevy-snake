@@ -1,12 +1,14 @@
 use bevy::{
     app,
+    asset::transformer,
+    ecs::query,
     math::bounding::{Aabb2d, BoundingCircle, BoundingVolume, IntersectsVolume},
     prelude::*,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
 use rand::Rng;
 
-#[derive(PartialEq)]
+#[derive(Clone, PartialEq)]
 enum Direction {
     Up,
     Down,
@@ -44,8 +46,89 @@ fn main() {
             ..Default::default()
         }))
         .add_systems(Startup, setup_snake)
+        .add_systems(FixedUpdate, (handle_input, move_snake))
         .run();
 }
+
+fn move_snake(
+    mut snake_head_query: Query<(&mut Transform, &mut SnakeHead)>,
+    mut snake_body_query: Query<(&mut Transform), (With<SnakeBody>, Without<SnakeHead>)>,
+    time: Res<Time>,
+) {
+    let mut moved_head = false;
+    let mut last_translation = snake_head_query.single().0.translation.clone();
+
+    snake_head_query
+        .iter_mut()
+        .for_each(
+            |(mut transform, mut snake_head)| match snake_head.direction {
+                Direction::Up => {
+                    transform.translation.y += OBJECT_SIZE; // * time.delta_seconds();
+                }
+                Direction::Down => {
+                    transform.translation.y -= OBJECT_SIZE; // * time.delta_seconds();
+                }
+                Direction::Left => {
+                    transform.translation.x -= OBJECT_SIZE; // * time.delta_seconds();
+                }
+                Direction::Right => {
+                    transform.translation.x += OBJECT_SIZE; // * time.delta_seconds();
+                }
+            },
+        );
+
+    snake_body_query.iter_mut().for_each(|mut transform| {
+        let temp_translation = transform.translation.clone();
+        transform.translation = last_translation;
+        last_translation = temp_translation;
+    });
+}
+
+fn handle_input(
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    mut snake_head_query: Query<(&mut Transform, &mut SnakeHead)>,
+    mut snake_body_query: Query<(&mut Transform), (With<SnakeBody>, Without<SnakeHead>)>,
+    time: Res<Time>,
+) {
+    let mut moved_head = false;
+    let mut last_translation = snake_head_query.single().0.translation.clone();
+    keyboard_input.get_pressed().for_each(|key| {
+        snake_head_query
+            .iter_mut()
+            .for_each(|(mut transform, mut snake_head)| match key {
+                KeyCode::ArrowUp => {
+                    if snake_head.direction != Direction::Down {
+                        moved_head = true;
+                        snake_head.direction = Direction::Up;
+                        // transform.translation.y += OBJECT_SIZE;
+                    }
+                }
+                KeyCode::ArrowDown => {
+                    if snake_head.direction != Direction::Up {
+                        moved_head = true;
+                        snake_head.direction = Direction::Down;
+                        // transform.translation.y -= OBJECT_SIZE;
+                    }
+                }
+                KeyCode::ArrowLeft => {
+                    if snake_head.direction != Direction::Right {
+                        moved_head = true;
+                        snake_head.direction = Direction::Left;
+                        // transform.translation.x -= OBJECT_SIZE;
+                    }
+                }
+                KeyCode::ArrowRight => {
+                    if snake_head.direction != Direction::Left {
+                        moved_head = true;
+                        snake_head.direction = Direction::Right;
+                        // transform.translation.x += OBJECT_SIZE;
+                    }
+                }
+                _ => {}
+            })
+    });
+}
+
 fn get_random_position() -> Vec2 {
     let mut rng = rand::thread_rng();
     let x = (rng.gen_range(0..(WINDOW_WIDTH / OBJECT_SIZE) as i32)
@@ -108,7 +191,7 @@ fn setup_snake(
             transform: Transform::from_translation(apple_position.extend(0.0)),
             ..default()
         },
-        SnakeBody,
+        Apple,
         Position(apple_position),
     ));
 }
