@@ -118,7 +118,7 @@ fn move_snake(
                 (((SNAKE_SPEED * time.delta_seconds() / OBJECT_SIZE) as i32) as f32) * OBJECT_SIZE;
         }
         Direction::Right => {
-            .translation.x +=
+            snake_head_transform.translation.x +=
                 (((SNAKE_SPEED * time.delta_seconds() / OBJECT_SIZE) as i32) as f32) * OBJECT_SIZE;
         }
     }
