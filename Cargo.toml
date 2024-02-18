@@ -6,8 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-# bevy = "0.13"
-bevy = { version = "0.13.0", features = ["dynamic_linking"] }
+bevy = "0.13"
+# bevy = { version = "0.13.0", features = ["dynamic_linking"] }
 rand = "0.8.5"
 
 # Enable a small amount of optimization in debug mode
@@ -17,3 +17,20 @@ opt-level = 1
 # Enable high optimizations for dependencies (incl. Bevy), but not for our code:
 [profile.dev.package."*"]
 opt-level = 3
+
+
+[profile.wasm-release]
+# Use release profile as default values
+inherits = "release"
+
+# Optimize with size in mind, also try "s", sometimes it is better.
+# This doesn't increase compilation times compared to -O3, great improvements
+opt-level = "z"
+
+# Do a second optimization pass removing duplicate or unused code from dependencies.
+# Slows compile times, marginal improvements
+lto = "fat"
+
+# When building crates, optimize larger chunks at a time
+# Slows compile times, marginal improvements
+codegen-units = 1
