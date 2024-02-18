@@ -7,6 +7,7 @@ use bevy::{
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
 use rand::Rng;
+use std::time::Duration;
 
 #[derive(Clone, PartialEq)]
 enum Direction {
@@ -32,7 +33,8 @@ struct Apple;
 
 const WINDOW_WIDTH: f32 = 1000.0;
 const WINDOW_HEIGHT: f32 = 1000.0;
-const OBJECT_SIZE: f32 = 10.0;
+const OBJECT_SIZE: f32 = 20.0;
+const SNAKE_SPEED: f32 = 200.0;
 
 fn main() {
     println!("Starting Bevy Snake!");
@@ -46,11 +48,15 @@ fn main() {
             ..Default::default()
         }))
         .add_systems(Startup, setup_snake)
+        .insert_resource(Time::<Fixed>::from_duration(Duration::from_millis(100)))
         .add_systems(FixedUpdate, (handle_input, move_snake, check_collisions))
         .run();
 }
 
 fn check_collisions(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
     mut apple_query: Query<(&mut Transform), (With<Apple>, Without<SnakeHead>, Without<SnakeBody>)>,
     mut snake_head_query: Query<(&mut Transform, &mut SnakeHead)>,
     mut snake_body_query: Query<(&mut Transform), (With<SnakeBody>, Without<SnakeHead>)>,
@@ -66,6 +72,19 @@ fn check_collisions(
             apple_position = get_random_position();
         }
         apple_query.single_mut().translation = apple_position.extend(0.0);
+
+        let body_mesh = Mesh2dHandle(meshes.add(Rectangle::new(10.0, 10.0)));
+        let box_color = Color::rgb(0.8, 0.2, 0.1);
+        commands.spawn((
+            MaterialMesh2dBundle {
+                mesh: body_mesh,
+                material: materials.add(box_color),
+                transform: Transform::from_translation(Vec3::new(0.0, -10.0, 0.0)),
+                ..default()
+            },
+            SnakeBody,
+            Position(apple_translation.xy()),
+        ));
     }
 }
 
@@ -74,32 +93,46 @@ fn move_snake(
     mut snake_body_query: Query<(&mut Transform), (With<SnakeBody>, Without<SnakeHead>)>,
     time: Res<Time>,
 ) {
+    println!("time.delta_seconds(): {}", time.delta_seconds());
     let mut moved_head = false;
     let mut last_translation = snake_head_query.single().0.translation.clone();
 
+    println!(
+        "Moving {}",
+        (((SNAKE_SPEED * time.delta_seconds() / OBJECT_SIZE) as i32) as f32)
+    );
     let mut transform_and_snake_head = snake_head_query.single_mut();
     let mut transform = transform_and_snake_head.0;
     let snake_head = transform_and_snake_head.1;
     match snake_head.direction {
         Direction::Up => {
-            transform.translation.y += OBJECT_SIZE; // * time.delta_seconds();
+            transform.translation.y +=
+                (((SNAKE_SPEED * time.delta_seconds() / OBJECT_SIZE) as i32) as f32) * OBJECT_SIZE;
         }
         Direction::Down => {
-            transform.translation.y -= OBJECT_SIZE; // * time.delta_seconds();
+            transform.translation.y -=
+                (((SNAKE_SPEED * time.delta_seconds() / OBJECT_SIZE) as i32) as f32) * OBJECT_SIZE;
         }
         Direction::Left => {
-            transform.translation.x -= OBJECT_SIZE; // * time.delta_seconds();
+            transform.translation.x -=
+                (((SNAKE_SPEED * time.delta_seconds() / OBJECT_SIZE) as i32) as f32) * OBJECT_SIZE;
         }
         Direction::Right => {
-            transform.translation.x += OBJECT_SIZE; // * time.delta_seconds();
+            transform.translation.x +=
+                (((SNAKE_SPEED * time.delta_seconds() / OBJECT_SIZE) as i32) as f32) * OBJECT_SIZE;
         }
     }
 
-    let mut body_transform = snake_body_query.single_mut();
+    let mut last_translation = None;
 
-    let temp_translation = transform.translation.clone();
-    body_transform.translation = last_translation;
-    last_translation = temp_translation;
+    snake_body_query.iter_mut().for_each(|mut body_transform| {
+        if last_translation.is_none() {
+            last_translation = Some(transform.translation);
+        }
+        let temp_translation = transform.translation.clone();
+        body_transform.translation = last_translation.unwrap();
+        last_translation = Some(temp_translation);
+    });
 }
 
 fn handle_input(
