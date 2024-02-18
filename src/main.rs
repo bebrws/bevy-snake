@@ -66,20 +66,22 @@ fn check_collisions(
     if apple_translation == snake_head_translation {
         let mut apple_position = get_random_position();
         loop {
-            if apple_position != Vec2::new(0.0, 0.0) && apple_position != Vec2::new(0.0, -10.0) {
+            if apple_position != Vec2::new(0.0, 0.0)
+                && apple_position != Vec2::new(0.0, -OBJECT_SIZE)
+            {
                 break;
             }
             apple_position = get_random_position();
         }
         apple_query.single_mut().translation = apple_position.extend(0.0);
 
-        let body_mesh = Mesh2dHandle(meshes.add(Rectangle::new(10.0, 10.0)));
+        let body_mesh = Mesh2dHandle(meshes.add(Rectangle::new(OBJECT_SIZE, OBJECT_SIZE)));
         let box_color = Color::rgb(0.8, 0.2, 0.1);
         commands.spawn((
             MaterialMesh2dBundle {
                 mesh: body_mesh,
                 material: materials.add(box_color),
-                transform: Transform::from_translation(Vec3::new(0.0, -10.0, 0.0)),
+                transform: Transform::from_translation(apple_position.extend(0.0)),
                 ..default()
             },
             SnakeBody,
@@ -99,7 +101,7 @@ fn move_snake(
 
     println!(
         "Moving {}",
-        (((SNAKE_SPEED * time.delta_seconds() / OBJECT_SIZE) as i32) as f32)
+        (((SNAKE_SPEED * time.delta_seconds() / OBJECT_SIZE) as i32) as f32) * OBJECT_SIZE
     );
     let mut transform_and_snake_head = snake_head_query.single_mut();
     let mut snake_head_transform = transform_and_snake_head.0;
@@ -196,7 +198,7 @@ fn setup_snake(
 ) {
     commands.spawn(Camera2dBundle::default());
 
-    let head_mesh = Mesh2dHandle(meshes.add(Rectangle::new(10.0, 10.0)));
+    let head_mesh = Mesh2dHandle(meshes.add(Rectangle::new(OBJECT_SIZE, OBJECT_SIZE)));
     let box_color = Color::rgb(0.8, 0.2, 0.1);
     commands.spawn((
         MaterialMesh2dBundle {
@@ -211,27 +213,27 @@ fn setup_snake(
         Position(Vec2::new(0.0, 0.0)),
     ));
 
-    let body_mesh = Mesh2dHandle(meshes.add(Rectangle::new(10.0, 10.0)));
+    let body_mesh = Mesh2dHandle(meshes.add(Rectangle::new(OBJECT_SIZE, OBJECT_SIZE)));
     let box_color = Color::rgb(0.8, 0.2, 0.1);
     commands.spawn((
         MaterialMesh2dBundle {
             mesh: body_mesh,
             material: materials.add(box_color),
-            transform: Transform::from_translation(Vec3::new(0.0, -10.0, 0.0)),
+            transform: Transform::from_translation(Vec3::new(0.0, -OBJECT_SIZE, 0.0)),
             ..default()
         },
         SnakeBody,
-        Position(Vec2::new(0.0, -10.0)),
+        Position(Vec2::new(0.0, -OBJECT_SIZE)),
     ));
 
     let mut apple_position = get_random_position();
     loop {
-        if apple_position != Vec2::new(0.0, 0.0) && apple_position != Vec2::new(0.0, -10.0) {
+        if apple_position != Vec2::new(0.0, 0.0) && apple_position != Vec2::new(0.0, -OBJECT_SIZE) {
             break;
         }
         apple_position = get_random_position();
     }
-    let apple_mesh = Mesh2dHandle(meshes.add(Rectangle::new(10.0, 10.0)));
+    let apple_mesh = Mesh2dHandle(meshes.add(Rectangle::new(OBJECT_SIZE, OBJECT_SIZE)));
     let box_color = Color::rgb(0.0, 0.8, 0.0);
     commands.spawn((
         MaterialMesh2dBundle {
