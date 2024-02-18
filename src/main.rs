@@ -55,6 +55,18 @@ fn check_collisions(
     mut snake_head_query: Query<(&mut Transform, &mut SnakeHead)>,
     mut snake_body_query: Query<(&mut Transform), (With<SnakeBody>, Without<SnakeHead>)>,
 ) {
+    let apple_translation = apple_query.single_mut().translation;
+    let snake_head_translation = snake_head_query.single_mut().0.translation;
+    if apple_translation == snake_head_translation {
+        let mut apple_position = get_random_position();
+        loop {
+            if apple_position != Vec2::new(0.0, 0.0) && apple_position != Vec2::new(0.0, -10.0) {
+                break;
+            }
+            apple_position = get_random_position();
+        }
+        apple_query.single_mut().translation = apple_position.extend(0.0);
+    }
 }
 
 fn move_snake(
