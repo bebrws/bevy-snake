@@ -50,6 +50,13 @@ fn main() {
         .run();
 }
 
+// fn check_collisions(
+//     mut apple_query: Query<(&mut Transform), (With<Apple>)>,
+//     mut snake_head_query: Query<(&mut Transform, &mut SnakeHead)>,
+//     mut snake_body_query: Query<(&mut Transform), (With<SnakeBody>, Without<SnakeHead>)>,
+// ) {
+// }
+
 fn move_snake(
     mut snake_head_query: Query<(&mut Transform, &mut SnakeHead)>,
     mut snake_body_query: Query<(&mut Transform), (With<SnakeBody>, Without<SnakeHead>)>,
@@ -58,30 +65,29 @@ fn move_snake(
     let mut moved_head = false;
     let mut last_translation = snake_head_query.single().0.translation.clone();
 
-    snake_head_query
-        .iter_mut()
-        .for_each(
-            |(mut transform, mut snake_head)| match snake_head.direction {
-                Direction::Up => {
-                    transform.translation.y += OBJECT_SIZE; // * time.delta_seconds();
-                }
-                Direction::Down => {
-                    transform.translation.y -= OBJECT_SIZE; // * time.delta_seconds();
-                }
-                Direction::Left => {
-                    transform.translation.x -= OBJECT_SIZE; // * time.delta_seconds();
-                }
-                Direction::Right => {
-                    transform.translation.x += OBJECT_SIZE; // * time.delta_seconds();
-                }
-            },
-        );
+    let mut transform_and_snake_head = snake_head_query.single_mut();
+    let mut transform = transform_and_snake_head.0;
+    let snake_head = transform_and_snake_head.1;
+    match snake_head.direction {
+        Direction::Up => {
+            transform.translation.y += OBJECT_SIZE; // * time.delta_seconds();
+        }
+        Direction::Down => {
+            transform.translation.y -= OBJECT_SIZE; // * time.delta_seconds();
+        }
+        Direction::Left => {
+            transform.translation.x -= OBJECT_SIZE; // * time.delta_seconds();
+        }
+        Direction::Right => {
+            transform.translation.x += OBJECT_SIZE; // * time.delta_seconds();
+        }
+    }
 
-    snake_body_query.iter_mut().for_each(|mut transform| {
-        let temp_translation = transform.translation.clone();
-        transform.translation = last_translation;
-        last_translation = temp_translation;
-    });
+    let mut body_transform = snake_body_query.single_mut();
+
+    let temp_translation = transform.translation.clone();
+    body_transform.translation = last_translation;
+    last_translation = temp_translation;
 }
 
 fn handle_input(
