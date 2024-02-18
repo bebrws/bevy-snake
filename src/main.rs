@@ -46,16 +46,16 @@ fn main() {
             ..Default::default()
         }))
         .add_systems(Startup, setup_snake)
-        .add_systems(FixedUpdate, (handle_input, move_snake))
+        .add_systems(FixedUpdate, (handle_input, move_snake, check_collisions))
         .run();
 }
 
-// fn check_collisions(
-//     mut apple_query: Query<(&mut Transform), (With<Apple>)>,
-//     mut snake_head_query: Query<(&mut Transform, &mut SnakeHead)>,
-//     mut snake_body_query: Query<(&mut Transform), (With<SnakeBody>, Without<SnakeHead>)>,
-// ) {
-// }
+fn check_collisions(
+    mut apple_query: Query<(&mut Transform), (With<Apple>)>,
+    mut snake_head_query: Query<(&mut Transform, &mut SnakeHead)>,
+    mut snake_body_query: Query<(&mut Transform), (With<SnakeBody>, Without<SnakeHead>)>,
+) {
+}
 
 fn move_snake(
     mut snake_head_query: Query<(&mut Transform, &mut SnakeHead)>,
