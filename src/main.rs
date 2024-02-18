@@ -36,20 +36,14 @@ const SNAKE_SPEED: f32 = 200.0;
 fn main() {
     println!("Starting Bevy Snake!");
     App::new()
-        .add_plugins(
-            DefaultPlugins.set(WindowPlugin {
-                primary_window: Some(Window {
-                    resolution: [
-                        WINDOW_WIDTH + OBJECT_SIZE / 2.0,
-                        WINDOW_HEIGHT + OBJECT_SIZE / 2.0,
-                    ]
-                    .into(),
-                    title: "Bevy Snake!".to_string(),
-                    ..Default::default()
-                }),
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                resolution: [WINDOW_WIDTH + OBJECT_SIZE, WINDOW_HEIGHT + OBJECT_SIZE].into(),
+                title: "Bevy Snake!".to_string(),
                 ..Default::default()
             }),
-        )
+            ..Default::default()
+        }))
         .add_systems(Startup, setup_snake)
         .insert_resource(Time::<Fixed>::from_duration(Duration::from_millis(100)))
         .add_systems(FixedUpdate, (handle_input, move_snake, check_collisions))
