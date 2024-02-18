@@ -60,6 +60,8 @@ fn check_collisions(
 ) {
     let apple_translation = apple_query.single_mut().translation;
     let snake_head_translation = snake_head_query.single_mut().0.translation;
+    let (mut snake_head_transform, mut snake_head) = snake_head_query.single_mut();
+    // let mut snake_head = snake_head_query.single_mut().1;
     if apple_translation == snake_head_translation {
         let mut apple_position = get_random_position();
         loop {
@@ -96,6 +98,27 @@ fn check_collisions(
         snake_body_query.iter().for_each(|(body_transform, body)| {
             commands.entity(body).despawn();
         });
+    }
+
+    if snake_head_translation.x < -WINDOW_WIDTH / 2.0 {
+        snake_head.direction = Direction::Left;
+        snake_head_transform.translation =
+            Vec3::new(WINDOW_WIDTH / 2.0, snake_head_translation.y, 0.0);
+    }
+    if snake_head_translation.x > WINDOW_WIDTH / 2.0 {
+        snake_head.direction = Direction::Right;
+        snake_head_transform.translation =
+            Vec3::new(-WINDOW_WIDTH / 2.0, snake_head_translation.y, 0.0);
+    }
+    if snake_head_translation.y < -WINDOW_HEIGHT / 2.0 {
+        snake_head.direction = Direction::Down;
+        snake_head_transform.translation =
+            Vec3::new(snake_head_translation.x, WINDOW_WIDTH / 2.0, 0.0);
+    }
+    if snake_head_translation.y > WINDOW_HEIGHT / 2.0 {
+        snake_head.direction = Direction::Up;
+        snake_head_transform.translation =
+            Vec3::new(snake_head_translation.x, -WINDOW_WIDTH / 2.0, 0.0);
     }
 }
 
