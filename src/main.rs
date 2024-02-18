@@ -28,9 +28,9 @@ struct SnakeBody;
 #[derive(Component)]
 struct Apple;
 
-const WINDOW_WIDTH: f32 = 1000.0;
-const WINDOW_HEIGHT: f32 = 1000.0;
 const OBJECT_SIZE: f32 = 20.0;
+const WINDOW_WIDTH: f32 = 50.0 * OBJECT_SIZE;
+const WINDOW_HEIGHT: f32 = 50.0 * OBJECT_SIZE;
 const SNAKE_SPEED: f32 = 200.0;
 
 fn main() {
@@ -56,15 +56,15 @@ fn check_collisions(
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut apple_query: Query<(&mut Transform), (With<Apple>, Without<SnakeHead>, Without<SnakeBody>)>,
     mut snake_head_query: Query<(&mut Transform, &mut SnakeHead)>,
-    mut snake_body_query: Query<(&mut Transform), (With<SnakeBody>, Without<SnakeHead>)>,
+    mut snake_body_query: Query<(&mut Transform, Entity), (With<SnakeBody>, Without<SnakeHead>)>,
 ) {
     let apple_translation = apple_query.single_mut().translation;
     let snake_head_translation = snake_head_query.single_mut().0.translation;
     if apple_translation == snake_head_translation {
         let mut apple_position = get_random_position();
         loop {
-            if apple_position != Vec2::new(0.0, 0.0)
-                && apple_position != Vec2::new(0.0, -OBJECT_SIZE)
+            if apple_position != Vec2::new(OBJECT_SIZE / 2.0, OBJECT_SIZE / 2.0)
+                && apple_position != Vec2::new(OBJECT_SIZE / 2.0, -OBJECT_SIZE / 2.0)
             {
                 break;
             }
@@ -84,6 +84,19 @@ fn check_collisions(
             SnakeBody,
         ));
     }
+
+    let mut crashed = false;
+    for (body_transform, body) in &snake_body_query {
+        if snake_head_translation == body_transform.translation {
+            crashed = true;
+        }
+    }
+
+    if crashed {
+        snake_body_query.iter().for_each(|(body_transform, body)| {
+            commands.entity(body).despawn();
+        });
+    }
 }
 
 fn move_snake(
@@ -91,14 +104,14 @@ fn move_snake(
     mut snake_body_query: Query<(&mut Transform), (With<SnakeBody>, Without<SnakeHead>)>,
     time: Res<Time>,
 ) {
-    println!("time.delta_seconds(): {}", time.delta_seconds());
+    // println!("time.delta_seconds(): {}", time.delta_seconds());
     let mut moved_head = false;
     let mut last_translation = snake_head_query.single().0.translation.clone();
 
-    println!(
-        "Moving {}",
-        (((SNAKE_SPEED * time.delta_seconds() / OBJECT_SIZE) as i32) as f32) * OBJECT_SIZE
-    );
+    // println!(
+    //     "Moving {}",
+    //     (((SNAKE_SPEED * time.delta_seconds() / OBJECT_SIZE) as i32) as f32) * OBJECT_SIZE
+    // );
     let mut transform_and_snake_head = snake_head_query.single_mut();
     let mut snake_head_transform = transform_and_snake_head.0;
     let shake_head_translation = snake_head_transform.translation.clone();
@@ -180,10 +193,12 @@ fn get_random_position() -> Vec2 {
     let mut rng = rand::thread_rng();
     let x = (rng.gen_range(0..(WINDOW_WIDTH / OBJECT_SIZE) as i32)
         - (((WINDOW_WIDTH / OBJECT_SIZE) as i32) / 2)) as f32
-        * OBJECT_SIZE;
+        * OBJECT_SIZE
+        + (OBJECT_SIZE / 2.0);
     let y = (rng.gen_range(0..(WINDOW_HEIGHT / OBJECT_SIZE) as i32)
         - (((WINDOW_HEIGHT / OBJECT_SIZE) as i32) / 2)) as f32
-        * OBJECT_SIZE;
+        * OBJECT_SIZE
+        + (OBJECT_SIZE / 2.0);
     Vec2::new(x, y)
 }
 
@@ -200,7 +215,11 @@ fn setup_snake(
         MaterialMesh2dBundle {
             mesh: head_mesh,
             material: materials.add(box_color),
-            transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
+            transform: Transform::from_translation(Vec3::new(
+                OBJECT_SIZE / 2.0,
+                OBJECT_SIZE / 2.0,
+                0.0,
+            )),
             ..default()
         },
         SnakeHead {
@@ -214,7 +233,11 @@ fn setup_snake(
         MaterialMesh2dBundle {
             mesh: body_mesh,
             material: materials.add(box_color),
-            transform: Transform::from_translation(Vec3::new(0.0, -OBJECT_SIZE, 0.0)),
+            transform: Transform::from_translation(Vec3::new(
+                OBJECT_SIZE / 2.0,
+                -OBJECT_SIZE / 2.0,
+                0.0,
+            )),
             ..default()
         },
         SnakeBody,
@@ -222,7 +245,9 @@ fn setup_snake(
 
     let mut apple_position = get_random_position();
     loop {
-        if apple_position != Vec2::new(0.0, 0.0) && apple_position != Vec2::new(0.0, -OBJECT_SIZE) {
+        if apple_position != Vec2::new(OBJECT_SIZE / 2.0, OBJECT_SIZE / 2.0)
+            && apple_position != Vec2::new(OBJECT_SIZE / 2.0, -OBJECT_SIZE / 2.0)
+        {
             break;
         }
         apple_position = get_random_position();
