@@ -38,6 +38,8 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
+                #[cfg(target_arch = "wasm32")]
+                canvas: Some("#bevy-portal".to_string()),
                 resolution: [WINDOW_WIDTH + OBJECT_SIZE, WINDOW_HEIGHT + OBJECT_SIZE].into(),
                 title: "Bevy Snake!".to_string(),
                 ..Default::default()
