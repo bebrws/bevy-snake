@@ -63,31 +63,6 @@ fn check_collisions(
     let apple_translation = apple_query.single_mut().translation;
     let snake_head_translation = snake_head_query.single_mut().0.translation;
     let (mut snake_head_transform, mut snake_head) = snake_head_query.single_mut();
-    // let mut snake_head = snake_head_query.single_mut().1;
-    if apple_translation == snake_head_translation {
-        let mut apple_position = get_random_position();
-        loop {
-            if apple_position != Vec2::new(0.0, 0.0)
-                && apple_position != Vec2::new(0.0, -OBJECT_SIZE)
-            {
-                break;
-            }
-            apple_position = get_random_position();
-        }
-        apple_query.single_mut().translation = apple_position.extend(0.0);
-
-        let body_mesh = Mesh2dHandle(meshes.add(Rectangle::new(OBJECT_SIZE, OBJECT_SIZE)));
-        let box_color = Color::rgb(0.8, 0.2, 0.1);
-        commands.spawn((
-            MaterialMesh2dBundle {
-                mesh: body_mesh,
-                material: materials.add(box_color),
-                transform: Transform::from_translation(apple_position.extend(0.0)),
-                ..default()
-            },
-            SnakeBody,
-        ));
-    }
 
     let mut crashed = false;
     for (body_transform, body) in &snake_body_query {
@@ -121,6 +96,31 @@ fn check_collisions(
         snake_head.direction = Direction::Up;
         snake_head_transform.translation =
             Vec3::new(snake_head_translation.x, -WINDOW_WIDTH / 2.0, 0.0);
+    }
+
+    if apple_translation == snake_head_translation {
+        let mut apple_position = get_random_position();
+        loop {
+            if apple_position != Vec2::new(0.0, 0.0)
+                && apple_position != Vec2::new(0.0, -OBJECT_SIZE)
+            {
+                break;
+            }
+            apple_position = get_random_position();
+        }
+        apple_query.single_mut().translation = apple_position.extend(0.0);
+
+        let body_mesh = Mesh2dHandle(meshes.add(Rectangle::new(OBJECT_SIZE, OBJECT_SIZE)));
+        let box_color = Color::rgb(0.8, 0.2, 0.1);
+        commands.spawn((
+            MaterialMesh2dBundle {
+                mesh: body_mesh,
+                material: materials.add(box_color),
+                transform: Transform::from_translation(apple_position.extend(0.0)),
+                ..default()
+            },
+            SnakeBody,
+        ));
     }
 }
 
