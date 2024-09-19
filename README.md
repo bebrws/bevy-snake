@@ -1,5 +1,7 @@
 # Snake Made Using Bevy!
 
+[Click here to play](https://bbarrows.com/posts/bevy-snake) and read the blog post.
+
 Just as an experiment and reason to get some more Rust practice in..
 
 ## Faster Compiling and Building Statically
